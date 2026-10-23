@@ -1,4 +1,4 @@
-"""Fast PatchmatchNet inference (exp 011). Same weights, same outputs as models.net.PatchmatchNet (eval mode).
+"""Fast PatchmatchNet inference. Same weights, same outputs as models.net.PatchmatchNet (eval mode).
 
 FastPatchmatchNet(state_dict, mode, **patchmatch_args)(images [1,N,3,H,W] in [0,1], intrinsics [1,N,3,3],
 extrinsics [1,N,4,4], depth_min [1], depth_max [1]) -> (depth [1,H,W], photometric confidence [1,H,W]).
@@ -152,7 +152,7 @@ class FastPatchmatchNet(torch.nn.Module):
         if mode == "max":
             load_ext()
             if hacc:
-                import fastbb.cudnn_conv as cc
+                from .fastbb_vendored import cudnn_conv as cc
                 self._cc = cc
 
     def _w(self, w):
