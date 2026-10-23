@@ -1,3 +1,21 @@
+> **You are on `cuda-kernels`.** Research fork of the upstream `PatchmatchNet` repository (base `8dc6cb4`, 2026-10; `main` mirrors upstream). `cuda-kernels` = upstream plus custom CUDA kernels and fast paths (fused cudnn-conv / patchmatch kernels (pmn_kernels, prebuilt .so, JIT-compiles if missing)). Prebuilt binaries are tied to the torch/CUDA build they were made with; the vendored fastbb cudnn-frontend paths need `pip install nvidia-cudnn-frontend`.
+>
+> Licence, as upstream (see LICENSE)
+
+RTX 5060 Ti 16 GB, torch cu130, 2026-10-23. Median of N runs after warm-up, fixed seeds. Speed-up columns: vs upstream + flags / vs upstream. Peak memory = torch peak allocated / reserved.
+
+Flags in the 'upstream + flags' row (no source change): fp16 autocast, cudnn.benchmark, TF32.
+
+| version | 1536x1024 ms | 480x320 ms | speed-up at A (vs flags / vs upstream) | speed-up at B | peak MB at A (alloc / reserved) | startup / first call / new size | accuracy |
+|---|---|---|---|---|---|---|---|
+| upstream (fp32) | 390.5 | 43.0 | 1.00x | 1.00x | 1580 / 2020 | 1.1 s / 877 ms / 69 ms | absrel 0.1245, d125 80.54 |
+| upstream + flags (fp16 autocast, cudnn.benchmark, TF32; channels_last not applicable to 3D convs) | 313.3 | 43.9 | 1.00x / 1.25x | 1.00x / 0.98x | 2580 / 2980 | first call 5.3 s / new size 1112 ms | absrel 0.1256 (TF32-only variant: 366.6 ms, absrel 0.1243) |
+| **cuda-kernels** | 42.1 | 7.1 | 7.44x / 9.28x | 6.18x / 6.06x | 1060 / 1250 | first call 412 ms / new size 61 ms | absrel 0.1246 |
+
+Depth difference vs upstream (median of per-ref medians): flags 9.0 mm, cuda-kernels 1.1 mm; large maxima (about 28 m) are patchmatch outliers.
+
+---
+
 # PatchmatchNet (CVPR2021 Oral)
 official source code of paper 'PatchmatchNet: Learned Multi-View Patchmatch Stereo'
 ![](imgs/structure_teaser.jpg)
